@@ -5,9 +5,14 @@ import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
-export default async function ProfilePage() {
+export default async function ProfilePage({
+  searchParams
+}: {
+  searchParams: Promise<Record<string, string | undefined>>;
+}) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) redirect("/login?callbackUrl=/profile");
+  const params = await searchParams;
 
   const orders = await prisma.order.findMany({
     where: { userId: session.user.id },
@@ -27,6 +32,7 @@ export default async function ProfilePage() {
       </div>
       <div className="profile-panel">
         <h2>История заказов</h2>
+        {params.paid ? <div className="success-note">Тестовая оплата прошла, заказ сохранен.</div> : null}
         {orders.length ? (
           orders.map((order) => (
             <div className="profile-row" key={order.id}>

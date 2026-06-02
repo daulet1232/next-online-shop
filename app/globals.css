@@ -104,6 +104,7 @@ button {
 }
 
 .icon-button {
+  position: relative;
   display: inline-grid;
   width: 40px;
   height: 40px;
@@ -112,6 +113,7 @@ button {
   border-radius: var(--radius);
   background: var(--surface);
   color: var(--ink);
+  overflow: visible;
   transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
 }
 
@@ -124,10 +126,6 @@ button {
   border-color: var(--blue);
   background: var(--blue);
   color: #fff;
-}
-
-.menu-button {
-  display: none;
 }
 
 .button {
@@ -352,6 +350,34 @@ button {
   z-index: 2;
 }
 
+.product-card__favorite.is-favorite {
+  border-color: #ffccd3;
+  background: #fff1f3;
+  color: #e11d48;
+}
+
+.product-card__cart-button {
+  position: relative;
+}
+
+.product-card__cart-count,
+.cart-link span {
+  position: absolute;
+  top: -7px;
+  right: -7px;
+  display: grid;
+  min-width: 20px;
+  height: 20px;
+  place-items: center;
+  border: 2px solid var(--surface);
+  border-radius: 99px;
+  background: var(--blue);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1;
+}
+
 .badge {
   position: absolute;
   top: 12px;
@@ -366,6 +392,7 @@ button {
 }
 
 .product-card__body {
+  min-width: 0;
   padding: 14px;
 }
 
@@ -395,6 +422,7 @@ button {
   margin-top: 9px;
   font-weight: 800;
   line-height: 1.25;
+  overflow-wrap: anywhere;
 }
 
 .product-card p {
@@ -412,6 +440,7 @@ button {
 .product-card strong {
   display: block;
   font-size: 17px;
+  overflow-wrap: anywhere;
 }
 
 .product-card del {
@@ -939,6 +968,28 @@ button {
   background: var(--surface-2);
 }
 
+.fake-payment {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid #cdd8ff;
+  border-radius: var(--radius);
+  background: #f3f6ff;
+}
+
+.fake-payment > div {
+  display: grid;
+  grid-template-columns: 1fr 120px;
+  gap: 10px;
+}
+
+.fake-payment p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
 .summary--checkout p {
   margin: 0;
   color: var(--muted);
@@ -1044,21 +1095,6 @@ button {
 
 .mobile-nav {
   display: none;
-}
-
-.cart-link span {
-  position: absolute;
-  top: -7px;
-  right: -7px;
-  display: grid;
-  min-width: 20px;
-  height: 20px;
-  place-items: center;
-  border-radius: 99px;
-  background: var(--blue);
-  color: #fff;
-  font-size: 12px;
-  font-weight: 800;
 }
 
 .empty-state,
@@ -1180,17 +1216,13 @@ button {
   }
 
   .site-header__inner {
-    grid-template-columns: 1fr auto;
+    grid-template-columns: 1fr;
     min-height: 64px;
     gap: 12px;
   }
 
-  .header-actions .icon-button:not(.menu-button) {
+  .header-actions {
     display: none;
-  }
-
-  .menu-button {
-    display: inline-grid;
   }
 
   .hero {
@@ -1233,6 +1265,24 @@ button {
     grid-template-columns: 1fr;
   }
 
+  .product-card__media,
+  .product-visual {
+    min-height: 176px;
+  }
+
+  .product-image img {
+    max-height: 260px;
+    padding: 14px;
+  }
+
+  .product-card__title {
+    font-size: 16px;
+  }
+
+  .product-card p {
+    min-height: auto;
+  }
+
   .catalog-page,
   .product-page,
   .cart-page,
@@ -1251,7 +1301,7 @@ button {
 
   .product-detail__gallery,
   .product-detail__gallery .product-visual {
-    min-height: 350px;
+    min-height: 280px;
   }
 
   .product-detail__info {
@@ -1263,7 +1313,24 @@ button {
   }
 
   .cart-item {
-    grid-template-columns: 96px 1fr auto;
+    grid-template-columns: 82px minmax(0, 1fr) auto;
+    gap: 12px;
+  }
+
+  .cart-item__image {
+    min-height: 78px;
+  }
+
+  .cart-item__image img {
+    padding: 8px;
+  }
+
+  .cart-item__info {
+    min-width: 0;
+  }
+
+  .cart-item__info strong {
+    overflow-wrap: anywhere;
   }
 
   .cart-item > strong,
@@ -1279,6 +1346,10 @@ button {
 
   .checkout-options {
     flex-direction: column;
+  }
+
+  .fake-payment > div {
+    grid-template-columns: 1fr;
   }
 
   .footer__inner,

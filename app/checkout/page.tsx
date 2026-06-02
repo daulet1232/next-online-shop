@@ -1,6 +1,7 @@
 import { CreditCard, MapPin, PackageCheck } from "lucide-react";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
+import { createTestOrder } from "@/app/actions";
 import { authOptions } from "@/lib/auth";
 import { formatPrice, getCart } from "@/lib/data";
 
@@ -23,18 +24,18 @@ export default async function CheckoutPage() {
         </div>
       </div>
       <div className="checkout-grid">
-        <form className="checkout-form">
+        <form className="checkout-form" action={createTestOrder}>
           <label>
             Имя
-            <input name="customer" defaultValue={session.user.name ?? ""} />
+            <input name="customer" defaultValue={session.user.name ?? ""} required />
           </label>
           <label>
             Телефон
-            <input name="phone" placeholder="+7 700 000 00 00" />
+            <input name="phone" placeholder="+7 700 000 00 00" required />
           </label>
           <label>
             Адрес доставки
-            <input name="address" placeholder="Улица, дом, квартира" />
+            <input name="address" placeholder="Улица, дом, квартира" required />
           </label>
           <div className="checkout-options">
             <label>
@@ -44,8 +45,26 @@ export default async function CheckoutPage() {
               <input type="radio" name="delivery" /> Самовывоз
             </label>
           </div>
-          <button className="button button--primary" type="button" disabled={!items.length}>
-            Подтвердить заказ
+          <div className="fake-payment">
+            <strong>Тестовая оплата</strong>
+            <label>
+              Номер карты
+              <input name="card" inputMode="numeric" placeholder="4242 4242 4242 4242" defaultValue="4242 4242 4242 4242" />
+            </label>
+            <div>
+              <label>
+                Срок
+                <input name="expiry" placeholder="12/30" defaultValue="12/30" />
+              </label>
+              <label>
+                CVC
+                <input name="cvc" inputMode="numeric" placeholder="123" defaultValue="123" />
+              </label>
+            </div>
+            <p>Деньги не списываются. Заказ создается в БД как оплаченный.</p>
+          </div>
+          <button className="button button--primary" type="submit" disabled={!items.length}>
+            Оплатить тестово
           </button>
         </form>
         <aside className="summary summary--checkout">
@@ -55,7 +74,7 @@ export default async function CheckoutPage() {
           <div>
             <span>Оплата</span>
             <strong>
-              <CreditCard size={16} /> картой
+              <CreditCard size={16} /> тестовой картой
             </strong>
           </div>
           <div>

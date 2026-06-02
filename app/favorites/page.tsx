@@ -23,7 +23,7 @@ export default async function FavoritesPage() {
       {favorites.length ? (
         <div className="product-grid product-grid--catalog">
           {favorites.map((favorite) => (
-            <ProductCard product={favorite.product} key={favorite.id} />
+            <ProductCard product={favorite.product} initialFavorite key={favorite.id} />
           ))}
         </div>
       ) : (

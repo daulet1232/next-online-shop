@@ -1,6 +1,7 @@
-import { Heart, LogIn, Menu, ShoppingBag, UserRound } from "lucide-react";
+import { Heart, LogIn, UserRound } from "lucide-react";
 import { getServerSession } from "next-auth";
 import Link from "next/link";
+import { HeaderCartLink } from "@/components/HeaderCartLink";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
@@ -30,16 +31,10 @@ export async function Header() {
           <Link className="icon-button" href={session ? "/favorites" : "/login?callbackUrl=/favorites"} aria-label="Избранное">
             <Heart size={19} />
           </Link>
-          <Link className="icon-button cart-link" href={session ? "/cart" : "/login?callbackUrl=/cart"} aria-label="Корзина">
-            <ShoppingBag size={19} />
-            {cartCount?._sum.quantity ? <span>{cartCount._sum.quantity}</span> : null}
-          </Link>
+          <HeaderCartLink href={session ? "/cart" : "/login?callbackUrl=/cart"} initialCount={cartCount?._sum.quantity ?? 0} />
           <Link className="icon-button" href={session ? "/profile" : "/login?callbackUrl=/profile"} aria-label={session ? "Профиль" : "Войти"}>
             {session ? <UserRound size={19} /> : <LogIn size={19} />}
           </Link>
-          <button className="icon-button menu-button" aria-label="Меню">
-            <Menu size={20} />
-          </button>
         </div>
       </div>
     </header>

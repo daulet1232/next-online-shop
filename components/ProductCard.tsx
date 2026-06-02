@@ -1,16 +1,18 @@
-import { Heart, ShoppingCart, Star } from "lucide-react";
+import { Star } from "lucide-react";
 import Link from "next/link";
-import { addToCart, toggleFavorite } from "@/app/actions";
+import { ProductCartButton, ProductFavoriteButton } from "@/components/ProductCardActions";
 import { ProductVisual } from "@/components/ProductVisual";
 import { formatPrice } from "@/lib/data";
 import type { ProductWithImages } from "@/lib/types";
 
 export function ProductCard({
   product,
-  compact = false
+  compact = false,
+  initialFavorite = false
 }: {
   product: ProductWithImages;
   compact?: boolean;
+  initialFavorite?: boolean;
 }) {
   const callbackUrl = `/product/${product.slug}`;
 
@@ -21,13 +23,7 @@ export function ProductCard({
           {product.badge ? <span className="badge">{product.badge}</span> : null}
           <ProductVisual product={product} />
         </Link>
-        <form action={toggleFavorite}>
-          <input type="hidden" name="productId" value={product.id} />
-          <input type="hidden" name="callbackUrl" value={callbackUrl} />
-          <button className="icon-button product-card__favorite" type="submit" aria-label="Добавить в избранное">
-            <Heart size={18} />
-          </button>
-        </form>
+        <ProductFavoriteButton productId={product.id} callbackUrl={callbackUrl} initialFavorite={initialFavorite} />
       </div>
       <div className="product-card__body">
         <div className="product-card__meta">
@@ -45,13 +41,7 @@ export function ProductCard({
             <strong>{formatPrice(product.price)}</strong>
             {product.oldPrice ? <del>{formatPrice(product.oldPrice)}</del> : null}
           </div>
-          <form action={addToCart}>
-            <input type="hidden" name="productId" value={product.id} />
-            <input type="hidden" name="callbackUrl" value={callbackUrl} />
-            <button className="icon-button icon-button--blue" type="submit" aria-label="В корзину">
-              <ShoppingCart size={18} />
-            </button>
-          </form>
+          <ProductCartButton productId={product.id} callbackUrl={callbackUrl} />
         </div>
       </div>
     </article>

@@ -77,6 +77,64 @@ export async function removeCartItem(formData: FormData) {
   revalidatePath("/cart");
 }
 
+export async function createTestOrder(formData: FormData) {
+  const userId = await requireUser("/checkout");
+  const customer = String(formData.get("customer") ?? "").trim();
+  const phone = String(formData.get("phone") ?? "").trim();
+  const address = String(formData.get("address") ?? "").trim();
+
+  if (!customer || !phone || !address) {
+    redirect("/checkout?error=required");
+  }
+
+  const cartItems = await prisma.cartItem.findMany({
+    where: { userId },
+    include: { product: true }
+  });
+
+  if (!cartItems.length) {
+    redirect("/cart");
+  }
+
+  const total = cartItems.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
+
+  await prisma.$transaction(async (tx) => {
+    const deliveryAddress = await tx.address.create({
+      data: {
+        userId,
+        title: "Доставка",
+        city: "Не указан",
+        street: address
+      }
+    });
+
+    await tx.order.create({
+      data: {
+        userId,
+        addressId: deliveryAddress.id,
+        status: "PAID",
+        total,
+        customer,
+        phone,
+        items: {
+          create: cartItems.map((item) => ({
+            productId: item.productId,
+            quantity: item.quantity,
+            price: item.product.price
+          }))
+        }
+      }
+    });
+
+    await tx.cartItem.deleteMany({ where: { userId } });
+  });
+
+  revalidatePath("/cart");
+  revalidatePath("/checkout");
+  revalidatePath("/profile");
+  redirect("/profile?paid=1");
+}
+
 export async function registerUser(formData: FormData) {
   const name = String(formData.get("name") ?? "").trim();
   const email = String(formData.get("email") ?? "").toLowerCase().trim();
