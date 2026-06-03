@@ -1,9 +1,11 @@
 import { notFound } from "next/navigation";
-import { Heart, ShoppingCart, Star, Truck } from "lucide-react";
-import { addToCart, toggleFavorite } from "@/app/actions";
+import { Star, Truck } from "lucide-react";
+import { getServerSession } from "next-auth";
+import { ProductDetailActions } from "@/components/ProductDetailActions";
 import { ProductCard } from "@/components/ProductCard";
 import { ProductVisual } from "@/components/ProductVisual";
-import { getProduct, getRelatedProducts } from "@/lib/data";
+import { authOptions } from "@/lib/auth";
+import { getFavoriteProductIds, getProduct, getRelatedProducts } from "@/lib/data";
 import { formatPrice } from "@/lib/data";
 
 export const dynamic = "force-dynamic";
@@ -17,6 +19,9 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   }
 
   const related = await getRelatedProducts(product.slug);
+  const session = await getServerSession(authOptions);
+  const favoriteIds = session?.user?.id ? await getFavoriteProductIds(session.user.id, [product.id, ...related.map((item) => item.id)]) : [];
+  const favoriteIdSet = new Set(favoriteIds);
 
   return (
     <section className="product-page container">
@@ -56,23 +61,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
               <strong>{formatPrice(product.price)}</strong>
               {product.oldPrice ? <del>{formatPrice(product.oldPrice)}</del> : null}
             </div>
-            <div className="buy-panel__actions">
-              <form action={addToCart}>
-                <input type="hidden" name="productId" value={product.id} />
-                <input type="hidden" name="callbackUrl" value={`/product/${product.slug}`} />
-                <button className="button button--primary">
-                  <ShoppingCart size={18} />
-                  В корзину
-                </button>
-              </form>
-              <form action={toggleFavorite}>
-                <input type="hidden" name="productId" value={product.id} />
-                <input type="hidden" name="callbackUrl" value={`/product/${product.slug}`} />
-                <button className="icon-button" aria-label="Добавить в избранное">
-                  <Heart size={19} />
-                </button>
-              </form>
-            </div>
+            <ProductDetailActions productId={product.id} callbackUrl={`/product/${product.slug}`} initialFavorite={favoriteIdSet.has(product.id)} />
             <p>
               <Truck size={17} /> Доставка завтра или самовывоз сегодня
             </p>
@@ -87,7 +76,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
       </div>
       <div className="product-grid product-grid--catalog">
         {related.map((item) => (
-          <ProductCard product={item} key={item.id} compact />
+          <ProductCard product={item} initialFavorite={favoriteIdSet.has(item.id)} key={item.id} compact />
         ))}
       </div>
     </section>

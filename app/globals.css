@@ -350,6 +350,7 @@ button {
   z-index: 2;
 }
 
+.icon-button.is-favorite,
 .product-card__favorite.is-favorite {
   border-color: #ffccd3;
   background: #fff1f3;

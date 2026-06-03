@@ -2,26 +2,9 @@
 
 import { Minus, Plus, Trash2 } from "lucide-react";
 import Link from "next/link";
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import { changeCartQuantity, removeCartItem } from "@/app/actions";
-
-type CartLine = {
-  id: string;
-  quantity: number;
-  product: {
-    id: string;
-    slug: string;
-    name: string;
-    brand: string;
-    price: number;
-    memory: string | null;
-    battery: string | null;
-    images: {
-      url: string;
-      alt: string;
-    }[];
-  };
-};
+import { type ShopCartItem, useShopStore } from "@/lib/store/shop-store";
 
 const formatCartPrice = (price: number) =>
   new Intl.NumberFormat("ru-RU", {
@@ -29,10 +12,6 @@ const formatCartPrice = (price: number) =>
     currency: "KZT",
     maximumFractionDigits: 0
   }).format(price);
-
-const emitCartDelta = (delta: number) => {
-  window.dispatchEvent(new CustomEvent("community:cart-count-change", { detail: delta }));
-};
 
 const quantityFormData = (itemId: string, direction: "minus" | "plus") => {
   const formData = new FormData();
@@ -47,33 +26,35 @@ const removeFormData = (itemId: string) => {
   return formData;
 };
 
-export function CartClient({ initialItems }: { initialItems: CartLine[] }) {
-  const [items, setItems] = useState(initialItems);
+export function CartClient({ initialItems }: { initialItems: ShopCartItem[] }) {
+  const [isReady, setIsReady] = useState(false);
   const [, startTransition] = useTransition();
+  const storeItems = useShopStore((state) => state.cartItems);
+  const setCartItems = useShopStore((state) => state.setCartItems);
+  const changeCartItemQuantity = useShopStore((state) => state.changeCartItemQuantity);
+  const removeCartItemState = useShopStore((state) => state.removeCartItem);
+  const items = isReady ? storeItems : initialItems;
   const total = useMemo(() => items.reduce((sum, item) => sum + item.product.price * item.quantity, 0), [items]);
+
+  useEffect(() => {
+    setCartItems(initialItems);
+    setIsReady(true);
+  }, [initialItems, setCartItems]);
 
   const changeQuantity = (itemId: string, direction: "minus" | "plus") => {
     const currentItem = items.find((item) => item.id === itemId);
     if (!currentItem) return;
 
-    const previousItems = items;
     const delta = direction === "plus" ? 1 : -1;
+    const previousItems = items;
 
-    setItems((current) =>
-      current.flatMap((item) => {
-        if (item.id !== itemId) return item;
-        const nextQuantity = item.quantity + delta;
-        return nextQuantity > 0 ? [{ ...item, quantity: nextQuantity }] : [];
-      })
-    );
-    emitCartDelta(delta);
+    changeCartItemQuantity(itemId, delta);
 
     startTransition(async () => {
       try {
         await changeCartQuantity(quantityFormData(itemId, direction));
       } catch {
-        setItems(previousItems);
-        emitCartDelta(-delta);
+        setCartItems(previousItems);
       }
     });
   };
@@ -83,15 +64,13 @@ export function CartClient({ initialItems }: { initialItems: CartLine[] }) {
     if (!currentItem) return;
 
     const previousItems = items;
-    setItems((current) => current.filter((item) => item.id !== itemId));
-    emitCartDelta(-currentItem.quantity);
+    removeCartItemState(itemId);
 
     startTransition(async () => {
       try {
         await removeCartItem(removeFormData(itemId));
       } catch {
-        setItems(previousItems);
-        emitCartDelta(currentItem.quantity);
+        setCartItems(previousItems);
       }
     });
   };

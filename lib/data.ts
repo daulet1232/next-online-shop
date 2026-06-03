@@ -120,6 +120,20 @@ export async function getFavorites(userId: string) {
   });
 }
 
+export async function getFavoriteProductIds(userId: string, productIds: string[]) {
+  if (!productIds.length) return [];
+
+  const favorites = await prisma.favorite.findMany({
+    where: {
+      userId,
+      productId: { in: productIds }
+    },
+    select: { productId: true }
+  });
+
+  return favorites.map((favorite) => favorite.productId);
+}
+
 export const formatPrice = (price: number) =>
   new Intl.NumberFormat("ru-RU", {
     style: "currency",

@@ -1,13 +1,17 @@
 import Link from "next/link";
 import { ArrowRight, BadgeCheck, Truck, ShieldCheck } from "lucide-react";
+import { getServerSession } from "next-auth";
 import { ProductCard } from "@/components/ProductCard";
 import { ProductVisual } from "@/components/ProductVisual";
-import { getProducts } from "@/lib/data";
+import { authOptions } from "@/lib/auth";
+import { getFavoriteProductIds, getProducts } from "@/lib/data";
 
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const featuredProducts = await getProducts({ featured: true });
+  const [featuredProducts, session] = await Promise.all([getProducts({ featured: true }), getServerSession(authOptions)]);
+  const favoriteIds = session?.user?.id ? await getFavoriteProductIds(session.user.id, featuredProducts.map((product) => product.id)) : [];
+  const favoriteIdSet = new Set(favoriteIds);
   const heroProduct = featuredProducts[0];
 
   return (
@@ -55,7 +59,7 @@ export default async function HomePage() {
         {featuredProducts.length ? (
           <div className="product-grid">
             {featuredProducts.map((product) => (
-              <ProductCard product={product} key={product.id} />
+              <ProductCard product={product} initialFavorite={favoriteIdSet.has(product.id)} key={product.id} />
             ))}
           </div>
         ) : (

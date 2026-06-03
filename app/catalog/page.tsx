@@ -1,6 +1,8 @@
+import { getServerSession } from "next-auth";
 import { FilterPanel } from "@/components/FilterPanel";
 import { ProductCard } from "@/components/ProductCard";
-import { getProducts } from "@/lib/data";
+import { authOptions } from "@/lib/auth";
+import { getFavoriteProductIds, getProducts } from "@/lib/data";
 
 export const dynamic = "force-dynamic";
 
@@ -10,13 +12,18 @@ export default async function CatalogPage({
   searchParams: Promise<Record<string, string | undefined>>;
 }) {
   const params = await searchParams;
-  const products = await getProducts({
-    query: params.q,
-    price: params.price,
-    inStock: params.inStock === "1",
-    isNew: params.isNew === "1",
-    brand: params.brand
-  });
+  const [products, session] = await Promise.all([
+    getProducts({
+      query: params.q,
+      price: params.price,
+      inStock: params.inStock === "1",
+      isNew: params.isNew === "1",
+      brand: params.brand
+    }),
+    getServerSession(authOptions)
+  ]);
+  const favoriteIds = session?.user?.id ? await getFavoriteProductIds(session.user.id, products.map((product) => product.id)) : [];
+  const favoriteIdSet = new Set(favoriteIds);
 
   return (
     <section className="catalog-page container">
@@ -39,7 +46,7 @@ export default async function CatalogPage({
           {products.length ? (
             <div className="product-grid product-grid--catalog">
               {products.map((product) => (
-                <ProductCard product={product} key={product.id} />
+                <ProductCard product={product} initialFavorite={favoriteIdSet.has(product.id)} key={product.id} />
               ))}
             </div>
           ) : (

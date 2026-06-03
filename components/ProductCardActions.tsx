@@ -1,8 +1,9 @@
 "use client";
 
 import { Heart, ShoppingCart } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { addToCart, toggleFavorite } from "@/app/actions";
+import { useShopStore } from "@/lib/store/shop-store";
 
 export function ProductFavoriteButton({
   productId,
@@ -13,13 +14,22 @@ export function ProductFavoriteButton({
   callbackUrl: string;
   initialFavorite?: boolean;
 }) {
-  const [isFavorite, setIsFavorite] = useState(initialFavorite);
+  const [isHydrated, setIsHydrated] = useState(false);
+  const storeFavorite = useShopStore((state) => state.favoriteIds.includes(productId));
+  const setFavorite = useShopStore((state) => state.setFavorite);
+  const toggleFavoriteState = useShopStore((state) => state.toggleFavorite);
+  const isFavorite = isHydrated ? storeFavorite : initialFavorite;
+
+  useEffect(() => {
+    if (initialFavorite) setFavorite(productId, true);
+    setIsHydrated(true);
+  }, [initialFavorite, productId, setFavorite]);
 
   return (
     <form
       action={toggleFavorite}
       onSubmit={() => {
-        setIsFavorite((current) => !current);
+        toggleFavoriteState(productId);
       }}
     >
       <input type="hidden" name="productId" value={productId} />
@@ -43,14 +53,14 @@ export function ProductCartButton({
   productId: string;
   callbackUrl: string;
 }) {
-  const [cartAdds, setCartAdds] = useState(0);
+  const cartAdds = useShopStore((state) => state.productAddCounts[productId] ?? 0);
+  const incrementProductAdd = useShopStore((state) => state.incrementProductAdd);
 
   return (
     <form
       action={addToCart}
       onSubmit={() => {
-        setCartAdds((current) => current + 1);
-        window.dispatchEvent(new CustomEvent("community:cart-count-change", { detail: 1 }));
+        incrementProductAdd(productId);
       }}
     >
       <input type="hidden" name="productId" value={productId} />
