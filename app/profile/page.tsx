@@ -1,5 +1,6 @@
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
+import { SignOutButton } from "@/components/auth/SignOutButton";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
@@ -23,12 +24,15 @@ export default async function ProfilePage({
   return (
     <section className="profile-page container">
       <div className="profile-hero">
-        <div className="avatar">{session.user.name?.[0] ?? session.user.email?.[0] ?? "U"}</div>
-        <div>
-          <span className="eyebrow">Профиль</span>
-          <h1>{session.user.name ?? "Покупатель"}</h1>
-          <p>{session.user.email}</p>
+        <div className="profile-hero__identity">
+          <div className="avatar">{session.user.name?.[0] ?? session.user.email?.[0] ?? "U"}</div>
+          <div>
+            <span className="eyebrow">Профиль</span>
+            <h1>{session.user.name ?? "Покупатель"}</h1>
+            <p>{session.user.email}</p>
+          </div>
         </div>
+        <SignOutButton />
       </div>
       <div className="profile-panel">
         <h2>История заказов</h2>

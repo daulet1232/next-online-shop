@@ -1014,8 +1014,9 @@ button {
 
 .profile-hero {
   display: flex;
-  gap: 18px;
   align-items: center;
+  justify-content: space-between;
+  gap: 18px;
   margin-bottom: 18px;
   padding: 24px;
   border-radius: var(--radius);
@@ -1023,9 +1024,17 @@ button {
   color: #fff;
 }
 
+.profile-hero__identity {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  min-width: 0;
+}
+
 .profile-hero h1 {
   margin: 0;
   font-size: 42px;
+  overflow-wrap: anywhere;
 }
 
 .profile-hero p {
@@ -1034,6 +1043,7 @@ button {
 }
 
 .avatar {
+  flex: 0 0 auto;
   display: grid;
   width: 72px;
   height: 72px;
@@ -1042,6 +1052,10 @@ button {
   background: var(--blue);
   font-size: 28px;
   font-weight: 900;
+}
+
+.profile-logout {
+  flex: 0 0 auto;
 }
 
 .profile-panel {
@@ -1351,6 +1365,20 @@ button {
 
   .fake-payment > div {
     grid-template-columns: 1fr;
+  }
+
+  .profile-hero {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .profile-hero__identity {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .profile-logout {
+    width: 100%;
   }
 
   .footer__inner,
